@@ -1,0 +1,22 @@
+spring:
+  flyway:
+    enabled: true
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+
+    consumer:
+      group-id: messageservice
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      properties:
+        "[spring.json.value.default.type]": org.example.messageservice.message.MessageCreatedEvent
+        "[spring.json.trusted.packages]": org.example.messageservice.message
+
+app:
+  kafka:
+    retry:
+      attempts: 100
+      delay: 0

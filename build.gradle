@@ -1,0 +1,117 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.jooq.jooq-codegen-gradle' version '3.21.9'
+}
+
+group = 'org.example'
+version = '0.0.1-SNAPSHOT'
+description = 'messageservice'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'build/generated-src/jooq/main'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+    implementation 'org.springframework.boot:spring-boot-starter-jooq'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'org.postgresql:postgresql'
+    implementation('com.google.guava:guava:33.8.0-android')
+
+    jooqCodegen 'org.jooq:jooq-meta-extensions:3.21.9'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation('org.assertj:assertj-core:3.27.7')
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.boot:spring-boot-resttestclient'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
+
+    testImplementation 'io.zonky.test:embedded-database-spring-test:2.8.0'
+    testImplementation 'io.zonky.test:embedded-postgres:2.2.2'
+    testImplementation 'org.flywaydb.flyway-test-extensions:flyway-spring-test:10.0.0'
+    testImplementation 'org.awaitility:awaitility'
+
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.named('compileJava') {
+    dependsOn tasks.named('jooqCodegen')
+}
+
+jooq {
+    configuration {
+        generator {
+            name = 'org.jooq.codegen.JavaGenerator'
+
+            database {
+                name = 'org.jooq.meta.extensions.ddl.DDLDatabase'
+
+                properties {
+                    property {
+                        key = 'scripts'
+                        value = 'src/main/resources/db/migration/*.sql'
+                    }
+
+                    property {
+                        key = 'sort'
+                        value = 'flyway'
+                    }
+
+                    property {
+                        key = 'parseDialect'
+                        value = 'POSTGRES'
+                    }
+
+                    property {
+                        key = 'defaultNameCase'
+                        value = 'lower'
+                    }
+                }
+
+                forcedTypes {
+                    forcedType {
+                        name = 'INSTANT'
+                        includeExpression = '.*\\.CREATED_DATE|.*\\.PUBLISHED_DATE'
+                    }
+                }
+            }
+
+            generate {
+                daos = false
+                pojos = false
+            }
+
+            target {
+                packageName = 'org.example.messageservice.jooq'
+                directory = 'build/generated-src/jooq/main'
+            }
+        }
+    }
+}
