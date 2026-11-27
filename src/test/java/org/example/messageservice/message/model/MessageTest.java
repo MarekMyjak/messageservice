@@ -28,6 +28,28 @@ class MessageTest {
     }
 
     @Test
+    void doNothingWhenItsSent() {
+        // given
+        var externalId = externalId(randomUUID());
+        var message = aMessage().state(SENT).externalId(Optional.of(externalId)).build();
+
+        // when
+        var result = message.send(externalId);
+
+        // then
+        assertThat(result).isEqualTo(message);
+    }
+
+    @Test
+    void throwsWhenExternalIdIsDifferent() {
+        var message = aMessage().state(SENT).externalId(Optional.of(externalId(randomUUID()))).build();
+
+        assertThatThrownBy(() -> message.send(externalId(randomUUID())))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Argument publishedDate have to be the same as existing publishedDate");
+    }
+
+    @Test
     void throwsWhenNullIdValues() {
         assertThatThrownBy(() -> aMessage().id(null).build())
             .isInstanceOf(NullPointerException.class)

@@ -28,7 +28,6 @@ public class MessageCreatedConsumer {
         attempts = "${app.kafka.retry.attempts}",
         backOff = @BackOff(delayString = "${app.kafka.retry.delay}")
     )
-    @Transactional
     public void consume(MessageCreatedEvent event) {
         var message = messageRepository.get(event.messageId());
         var externalId = externalService.call(message);

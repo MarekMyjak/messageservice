@@ -29,6 +29,11 @@ public record Message(
     }
 
     public Message send(ExternalId externalId) {
+        if (state == SENT) {
+            checkArgument(externalId == this.externalId.get(), "Argument externalIid have to be the same as existing externalId");
+            return this;
+        }
+
         checkState(state == CREATED, "Expected state %s but was %s", CREATED, state);
         return copy()
             .state(SENT)

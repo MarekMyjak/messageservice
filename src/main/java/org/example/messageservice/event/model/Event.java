@@ -34,6 +34,11 @@ public record Event(
     }
 
     public Event publish(Instant publishedDate) {
+        if (state == PUBLISHED) {
+            checkArgument(publishedDate == this.publishedDate.get(), "Argument publishedDate have to be the same as existing publishedDate");
+            return this;
+        }
+
         checkState(state == CREATED, "Expected state %s but was %s", CREATED, state);
         return copy()
             .state(PUBLISHED)

@@ -23,7 +23,6 @@ public class MessageController {
 
     @PostMapping("/messages")
     @ResponseStatus(HttpStatus.CREATED)
-    @Transactional
     void submitMessage(@RequestBody JsonNode body) {
         var requestId = requestId(fromString(body.get("requestId").asString()));
         var content = content(body.get("content").asString());

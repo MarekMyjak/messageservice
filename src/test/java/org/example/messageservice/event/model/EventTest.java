@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.Optional;
 
+import static java.time.Period.ofDays;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.example.messageservice.EventTestData.aEvent;
@@ -24,6 +25,28 @@ class EventTest {
         // then
         assertThat(result.state()).isEqualTo(PUBLISHED);
         assertThat(result.publishedDate()).isEqualTo(Optional.of(publishedDate));
+    }
+
+    @Test
+    void doNothingWhenItsPublished() {
+        // given
+        var publishedDate = Instant.now();
+        var event = aEvent().state(PUBLISHED).publishedDate(Optional.of(publishedDate)).build();
+
+        // when
+        var result = event.publish(publishedDate);
+
+        // then
+        assertThat(result).isEqualTo(event);
+    }
+
+    @Test
+    void throwsWhenPublishedDateIsDifferent() {
+        var event = aEvent().state(PUBLISHED).publishedDate(Optional.of(Instant.now())).build();
+
+        assertThatThrownBy(() -> event.publish(Instant.now().plus(ofDays(1))))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Argument publishedDate have to be the same as existing publishedDate");
     }
 
     @Test
